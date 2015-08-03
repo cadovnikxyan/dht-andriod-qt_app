@@ -9,6 +9,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
    // connect(ui->textinfo,SIGNAL(t_h_graf_data()),this,SLOT(t_h_data_change()));
     t_h_graf_paint();
+    QPen penh,pent;
+    penh.setWidth(9);
+    penh.setColor(Qt::blue);
+    pent.setWidth(9);
+    pent.setColor(Qt::red);
+    ui->widget->addGraph();
+    ui->widget->graph(0)->setPen(penh);
+    ui->widget->addGraph();
+    ui->widget->graph(1)->setPen(pent);
 
 
 }
@@ -75,7 +84,7 @@ void MainWindow::slotReadClient()
     QStringList list_buf=buf.split("|");
     h.append(list_buf.at(0));
     t.append(list_buf.at(1));
-    emit t_h_graf_data();
+    on_graf_clicked();
     for(int i=0;i<list_buf.size();i++)
     {
         ui->textinfo->append(list_buf.at(i));
@@ -117,19 +126,11 @@ void MainWindow::on_graf_clicked()
         yt.append(buft.toDouble());
         x.append(i);
     }
-    QPen penh,pent;
-    penh.setWidth(9);
-    penh.setColor(Qt::blue);
-    pent.setWidth(9);
-    pent.setColor(Qt::red);
-    ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(penh);
-    ui->widget->addGraph();
-    ui->widget->graph(1)->setPen(pent);
+
     ui->widget->graph(0)->setData(x,yh);
-    ui->widget->graph(0)->rescaleAxes();
+   // ui->widget->graph(0)->rescaleAxes();
     ui->widget->graph(1)->setData(x,yt);
-    ui->widget->graph(1)->rescaleAxes();
+   // ui->widget->graph(1)->rescaleAxes();
     ui->widget->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     connect(ui->widget->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget->xAxis2, SLOT(setRange(QCPRange)));
     connect(ui->widget->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget->yAxis2, SLOT(setRange(QCPRange)));
@@ -138,5 +139,6 @@ void MainWindow::on_graf_clicked()
 
 void MainWindow::t_h_data_change()
 {
+
 
 }
