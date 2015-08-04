@@ -8,6 +8,7 @@
 #include <QByteArray>
 #include <QDataStream>
 #include <QGraphicsScene>
+#include <qcustomplot.h>
 
 namespace Ui {
 class MainWindow;
@@ -27,11 +28,12 @@ public slots:
     void on_stoping_clicked();
     void newuser();
     void slotReadClient();
-    void t_h_data_change();
+    void graphClicked(QCPAbstractPlottable *plottable);
+
 private slots:
     void on_graf_clicked();
-signals:
-    void t_h_graf_data();
+
+
 
 private:
 
@@ -40,6 +42,7 @@ private:
      int server_status;
      QMap<int,QTcpSocket *> SClients;
      QStringList h,t;
+     QVector <double>x,yh,yt;
 };
 
 #endif // MAINWINDOW_H

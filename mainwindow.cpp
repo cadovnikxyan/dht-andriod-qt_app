@@ -7,18 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 {
     ui->setupUi(this);
-   // connect(ui->textinfo,SIGNAL(t_h_graf_data()),this,SLOT(t_h_data_change()));
     t_h_graf_paint();
-    QPen penh,pent;
-    penh.setWidth(9);
-    penh.setColor(Qt::blue);
-    pent.setWidth(9);
-    pent.setColor(Qt::red);
-    ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(penh);
-    ui->widget->addGraph();
-    ui->widget->graph(1)->setPen(pent);
-
 
 }
 
@@ -42,6 +31,8 @@ void MainWindow::on_starting_clicked()
 
 void MainWindow::on_stoping_clicked()
 {
+    h.clear();
+    t.clear();
     if(server_status==1){
         foreach(int i,SClients.keys()){
             QTextStream os(SClients[i]);
@@ -64,7 +55,6 @@ void MainWindow::newuser()
         int idusersocs=clientSocket->socketDescriptor();
         SClients[idusersocs]=clientSocket;
         connect(SClients[idusersocs],SIGNAL(readyRead()),this, SLOT(slotReadClient()));
-          qApp->processEvents();
     }
 }
 
@@ -79,7 +69,6 @@ void MainWindow::slotReadClient()
           "\r\n"
           "<h1>Nothing to see here</h1>\n";
 
-
     QString buf=clientSocket->readAll();
     QStringList list_buf=buf.split("|");
     h.append(list_buf.at(0));
@@ -88,57 +77,61 @@ void MainWindow::slotReadClient()
     for(int i=0;i<list_buf.size();i++)
     {
         ui->textinfo->append(list_buf.at(i));
-          qApp->processEvents();
     }
-    // Если нужно закрыть сокет
+
     clientSocket->close();
     SClients.remove(idusersocs);
 }
 
 void MainWindow::t_h_graf_paint()
 {
-
-    ui->widget->xAxis->setRange(0,100);
-    ui->widget->yAxis->setRange(0,100);
-    ui->widget->yAxis->setLabel("Влажность, \n Температура");
     QPen pen(Qt::green);
     pen.setWidth(9);
     QFont font;
+    QPen penh,pent;
+    penh.setWidth(9);
+    penh.setColor(Qt::blue);
+    pent.setWidth(9);
+    pent.setColor(Qt::red);
     font.setPointSize(8);
+    ui->widget->xAxis->setRange(0,50);
+    ui->widget->yAxis->setRange(15,50);
+    ui->widget->legend->setFont(font);
+    ui->widget->legend->setSelectedFont(font);
+    ui->widget->legend->setSelectableParts(QCPLegend::spItems);
+    ui->widget->legend->setVisible(true);
     ui->widget->yAxis->setBasePen(pen);
     ui->widget->yAxis->setSubTickPen(QPen(Qt::green));
-    ui->widget->yAxis->setLabelFont(font);
     ui->widget->xAxis->setBasePen(pen);
     ui->widget->xAxis->setSubTickPen(QPen(Qt::green));
-
-
+    ui->widget->addGraph();
+    ui->widget->graph(0)->setPen(penh);
+    ui->widget->addGraph();
+    ui->widget->graph(1)->setPen(pent);
+    ui->widget->graph(0)->setName("Влажность \n %");
+    QString grad=QChar(176);
+    ui->widget->graph(1)->setName("Температура \n"+grad+"C");
+    connect(ui->widget, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*)));
 }
 
 void MainWindow::on_graf_clicked()
 {
-    QVector <double>x,yh,yt;
-  qApp->processEvents();
+
+    qApp->processEvents();
     for(int i=0;i<h.size();i++)
     {
-        QString bufh=h.at(i);
-        QString buft=t.at(i);
-        yh.append(bufh.toDouble());
-        yt.append(buft.toDouble());
+        yh.append(h.at(i).toDouble());
+        yt.append(t.at(i).toDouble());
         x.append(i);
     }
-
     ui->widget->graph(0)->setData(x,yh);
-   // ui->widget->graph(0)->rescaleAxes();
     ui->widget->graph(1)->setData(x,yt);
-   // ui->widget->graph(1)->rescaleAxes();
     ui->widget->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     connect(ui->widget->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget->xAxis2, SLOT(setRange(QCPRange)));
     connect(ui->widget->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->widget->yAxis2, SLOT(setRange(QCPRange)));
-
 }
 
-void MainWindow::t_h_data_change()
+void MainWindow::graphClicked(QCPAbstractPlottable *plottable)
 {
-
-
+  ui->statusBar->showMessage(QString("Clicked on graph '%1'.").arg(plottable->name()), 1000);
 }
